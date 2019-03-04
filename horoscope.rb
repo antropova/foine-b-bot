@@ -8,6 +8,7 @@ class Horoscope
     cancer: '♋️',
     virgo: '♍️',
     gemini: '♊️',
+    capricorn: '♑️'
   }.freeze
 
   def initialize(name:, sign:)
