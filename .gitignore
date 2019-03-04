@@ -1,0 +1,3 @@
+# Ignore dotenv files
+/.env
+/*.db
