@@ -19,13 +19,11 @@ class TelegramBot
   end
 
   def send_message
-    if user[:name] == 'Masha'
-      Telegram::Bot::Client.run(ENV['TELEGRAM_TOKEN']) do |bot|
-        bot.api.send_message(
-          chat_id: user[:telegram_id],
-          text: horoscope.parse_horoscope
-        )
-      end
+    Telegram::Bot::Client.run(ENV['TELEGRAM_TOKEN']) do |bot|
+      bot.api.send_message(
+        chat_id: user[:telegram_id],
+        text: horoscope.parse_horoscope
+      )
     end
   end
 end
