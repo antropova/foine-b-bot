@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bundler'
 Bundler.require
 
@@ -17,11 +19,13 @@ class TelegramBot
   end
 
   def send_message
-    Telegram::Bot::Client.run(ENV['TELEGRAM_TOKEN']) do |bot|
-      bot.api.send_message(
-        chat_id: user[:telegram_id],
-        text: horoscope.parse_horoscope
-      )
+    if user[:name] == 'Masha'
+      Telegram::Bot::Client.run(ENV['TELEGRAM_TOKEN']) do |bot|
+        bot.api.send_message(
+          chat_id: user[:telegram_id],
+          text: horoscope.parse_horoscope
+        )
+      end
     end
   end
 end
@@ -32,15 +36,16 @@ users.each do |user|
   telegram_bot.send_message
 end
 
-# bot = Telegram::Bot::Client.new(TOKEN)
-
+# bot = Telegram::Bot::Client.new(ENV['TELEGRAM_TOKEN'])
+# puts ENV['TELEGRAM_TOKEN']
+# puts 'hi'
 # bot.listen do |message|
-#   case message.text.downcase
+#   puts message.chat.id
+#   puts message
+#   case message.text
 #   when 'hey'
 #     puts "#{message.chat.id}"
-#     bot.api.send_message(chat_id: message.chat.id, text: "Hello, #{message.from.first_name}")
-#   else
-#     puts "#{message.chat.id}"
-#     bot.api.send_message(chat_id: message.chat.id, text: "you suck, #{message.from.first_name.downcase}")
+#     puts 'this is hey'
+#     # bot.api.send_message(chat_id: message.chat.id, text: "Hello, #{message.from.first_name}")
 #   end
 # end

@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 require 'open-uri'
+require 'httparty'
 
 class Horoscope
   attr_accessor :name, :sign, :zodiac_emoji
@@ -8,7 +11,7 @@ class Horoscope
     cancer: '♋️',
     virgo: '♍️',
     gemini: '♊️',
-    capricorn: '♑️'
+    capricorn: '♑️',
   }.freeze
 
   def initialize(name:, sign:)
@@ -20,13 +23,14 @@ class Horoscope
   def parse_horoscope
     parsed_object = {}
 
-    open(BROADLY_RSS) do |rss|
-      feed = RSS::Parser.parse(rss)
-      parsed_object[:channel_title] = "✨ Your daily horoscope from #{feed.channel.title} for #{name} ✨\n"
-      parsed_object[:horoscope_string] = feed.items.first.content_encoded.match(sign_regex).to_s
-    end
+    feed = RSS::Parser.parse(response.body)
+    parsed_object[:channel_title] = "✨ Your daily horoscope from #{feed.channel.title} for #{name} ✨\n"
+    puts "CONTENTZZZZZZ: #{feed.items.first.content_encoded}"
+    parsed_object[:horoscope] = feed.items.first.content_encoded.match(sign_regex)[1]
 
-    "#{parsed_object[:channel_title]} #{zodiac_emoji} #{format_horoscope(parsed_object[:horoscope_string]) }#{zodiac_emoji}"
+    puts "AFTER REGEX: #{parsed_object[:horoscope]}"
+
+    "#{parsed_object[:channel_title]} #{zodiac_emoji} #{format_horoscope(parsed_object[:horoscope]) }#{zodiac_emoji}"
   end
 
   private
@@ -35,7 +39,12 @@ class Horoscope
     %r{#{sign}<\/a>(.*?)<\/p>}
   end
 
+  def response
+    HTTParty.get(BROADLY_RSS)
+  end
+
   def format_horoscope(matching_string)
+    puts "FORMATTING METHOD: #{matching_string}"
     return if matching_string.empty?
 
     matching_string.split('<p>').last.split('</p>').last
