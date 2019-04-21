@@ -6,7 +6,7 @@ require 'httparty'
 class Horoscope
   attr_accessor :name, :sign, :zodiac_emoji
 
-  BROADLY_RSS = 'https://broadly.vice.com/en_us/rss'.freeze
+  BROADLY_RSS = 'https://broadly.vice.com/en_us/rss'
   ZODIAC_EMOJI = {
     cancer: '♋️',
     virgo: '♍️',
@@ -25,12 +25,11 @@ class Horoscope
 
     feed = RSS::Parser.parse(response.body)
     parsed_object[:channel_title] = "✨ Your daily horoscope from #{feed.channel.title} for #{name} ✨\n"
-    puts "CONTENTZZZZZZ: #{feed.items.first.content_encoded}"
     parsed_object[:horoscope] = feed.items.first.content_encoded.match(sign_regex)[1]
 
-    puts "AFTER REGEX: #{parsed_object[:horoscope]}"
-
     "#{parsed_object[:channel_title]} #{zodiac_emoji} #{format_horoscope(parsed_object[:horoscope]) }#{zodiac_emoji}"
+  rescue => exception
+    Raven.capture_exception(exception)
   end
 
   private
@@ -44,7 +43,6 @@ class Horoscope
   end
 
   def format_horoscope(matching_string)
-    puts "FORMATTING METHOD: #{matching_string}"
     return if matching_string.empty?
 
     matching_string.split('<p>').last.split('</p>').last

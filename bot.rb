@@ -25,6 +25,8 @@ class TelegramBot
         text: horoscope.parse_horoscope
       )
     end
+  rescue => exception
+    Raven.capture_exception(exception)
   end
 end
 
@@ -33,17 +35,3 @@ users.each do |user|
   telegram_bot = TelegramBot.new(user: user)
   telegram_bot.send_message
 end
-
-# bot = Telegram::Bot::Client.new(ENV['TELEGRAM_TOKEN'])
-# puts ENV['TELEGRAM_TOKEN']
-# puts 'hi'
-# bot.listen do |message|
-#   puts message.chat.id
-#   puts message
-#   case message.text
-#   when 'hey'
-#     puts "#{message.chat.id}"
-#     puts 'this is hey'
-#     # bot.api.send_message(chat_id: message.chat.id, text: "Hello, #{message.from.first_name}")
-#   end
-# end
