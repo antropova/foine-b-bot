@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+ruby '2.5.3'
 gem 'json'
 gem 'pry'
 gem 'telegram-bot-ruby', require: 'telegram/bot'
