@@ -22,14 +22,20 @@ class Horoscope
 
   def parse_horoscope
     parsed_object = {}
+    retries ||= 0
 
     feed = RSS::Parser.parse(response.body)
     parsed_object[:channel_title] = "✨ Your daily horoscope from #{feed.channel.title} for #{name} ✨\n"
     parsed_object[:horoscope] = feed.items.first.content_encoded.match(sign_regex)[1]
 
     "#{parsed_object[:channel_title]} #{zodiac_emoji} #{format_horoscope(parsed_object[:horoscope]) }#{zodiac_emoji}"
-  rescue => exception
+  rescue NoMethodError => exception
+    retries += 1
+
+    Raven.extra_context retries: retries
     Raven.capture_exception(exception)
+
+    retry if retries <= ENV['RSS_PARSE_RETRIES'].to_i
   end
 
   private
