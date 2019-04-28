@@ -1,0 +1,10 @@
+{
+  "name": "telegram-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "antropova",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
