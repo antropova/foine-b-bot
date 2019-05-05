@@ -44,13 +44,27 @@ class Horoscope
     %r{#{sign}<\/a>(.*?)<\/p>}
   end
 
+  def parse_link_regex
+    %r{<a href="(.*?)" target="_blank">here<\/a>}
+  end
+
+  def parsed_link(horoscope_text)
+    horoscope_text.match(parse_link_regex)[1]
+  end
+
   def response
     HTTParty.get(BROADLY_RSS)
+  end
+
+  def parse_horoscope_link(horoscope_text)
+    horoscope_text.gsub(parse_link_regex, "here -- #{parsed_link(horoscope_text)}")
   end
 
   def format_horoscope(matching_string)
     return if matching_string.empty?
 
-    matching_string.split('<p>').last.split('</p>').last
+    horoscope_text = matching_string.split('<p>').last.split('</p>').last
+
+    horoscope_text.match?(parse_link_regex) ? parse_horoscope_link(horoscope_text) : horoscope_text
   end
 end
