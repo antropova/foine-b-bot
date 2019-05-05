@@ -8,10 +8,18 @@ class Horoscope
 
   BROADLY_RSS = 'https://broadly.vice.com/en_us/rss'
   ZODIAC_EMOJI = {
-    cancer: '♋️',
-    virgo: '♍️',
+    aries: '♈️',
+    taurus: '♉️',
     gemini: '♊️',
+    cancer: '♋️',
+    leo: '♌️',
+    virgo: '♍️',
+    libra: '♎️',
+    scorpio: '♏️',
+    sagittarius: '♐️',
     capricorn: '♑️',
+    aquarius: '♒️',
+    pisces: '♓️',
   }.freeze
 
   def initialize(name:, sign:)
