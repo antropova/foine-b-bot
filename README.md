@@ -1,3 +1,3 @@
 # foine-b-bot
 
-friendly bot that parses @broadly's rss feed and sends you a daily message with your horoscope via a telegram bot `@FoineBitchBot`
+✨ friendly telegram bot `@FoineBitchBot` that parses `Vice Horoscope` RSS feed and sends you your daily horoscope ✨
