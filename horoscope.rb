@@ -6,7 +6,6 @@ require 'httparty'
 class Horoscope
   attr_accessor :name, :sign, :zodiac_emoji
 
-  BROADLY_RSS = 'https://broadly.vice.com/en_us/rss'
   ZODIAC_EMOJI = {
     aries: '♈️',
     taurus: '♉️',
@@ -36,7 +35,7 @@ class Horoscope
     parsed_object[:channel_title] = "✨ Your daily horoscope from #{feed.channel.title} for #{name} ✨\n"
     parsed_object[:horoscope] = feed.items.first.content_encoded.match(sign_regex)[1]
 
-    "#{parsed_object[:channel_title]} #{zodiac_emoji} #{format_horoscope(parsed_object[:horoscope]) }#{zodiac_emoji}"
+    "#{parsed_object[:channel_title]} #{zodiac_emoji} #{format_horoscope(parsed_object[:horoscope])} #{zodiac_emoji}"
   rescue NoMethodError => exception
     retries += 1
 
@@ -61,7 +60,7 @@ class Horoscope
   end
 
   def response
-    HTTParty.get(BROADLY_RSS)
+    HTTParty.get(ENV['VICE_HOROSCOPE_RSS'])
   end
 
   def parse_horoscope_link(horoscope_text)
