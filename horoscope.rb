@@ -33,9 +33,8 @@ class Horoscope
 
     feed = RSS::Parser.parse(response.body)
     parsed_object[:channel_title] = "✨ Your daily horoscope from #{feed.channel.title} for #{name} ✨\n"
-    parsed_object[:horoscope] = feed.items.first.content_encoded.match(sign_regex)[1]
-
-    "#{parsed_object[:channel_title]} #{zodiac_emoji} #{format_horoscope(parsed_object[:horoscope])} #{zodiac_emoji}"
+    parsed_object[:horoscope] = feed.items.first.content_encoded.match(sign_regex)[1].gsub("</h2> <p>", " #{zodiac_emoji}\n")
+    "#{parsed_object[:channel_title]} #{zodiac_emoji} #{format_horoscope(parsed_object[:horoscope])} "
   rescue NoMethodError => exception
     retries += 1
 
@@ -48,7 +47,7 @@ class Horoscope
   private
 
   def sign_regex
-    %r{#{sign}<\/a>(.*?)<\/p>}
+    %r{<h2> (#{sign} .*?)<\/p>}
   end
 
   def parse_link_regex
