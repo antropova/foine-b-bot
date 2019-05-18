@@ -1,6 +1,8 @@
 require 'bundler'
 Bundler.require
 
+require_relative 'user'
+
 DB = Sequel.connect(ENV['DATABASE_URL'])
 
 DB.create_table :users do
