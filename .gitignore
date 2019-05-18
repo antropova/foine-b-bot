@@ -1,10 +1,11 @@
 /.env
 /config/terraform/.tfvars
 /config/terraform/keys.json
+/config/terraform/*.zip
 /config/terraform/.terraform
 /config/terraform/files/*.zip
-/config/terraform/*.zip
 /config/terraform/files/node_modules
+/config/terraform/files/mock.js
 /config/terraform/files/local.js
 /config/terraform/*.tfstate
 /config/terraform/*.tfstate.backup
