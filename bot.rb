@@ -5,10 +5,10 @@ Bundler.require
 
 require_relative 'horoscope'
 
-class TelegramBot
-  attr_reader :user
+DB = Sequel.connect(ENV['DATABASE_URL'])
 
-  DB = Sequel.connect(ENV['DATABASE_URL'])
+class User < Sequel::Model(:users)
+  attr_reader :user
 
   def initialize(user:)
     @user = user
@@ -30,8 +30,8 @@ class TelegramBot
   end
 end
 
-users = TelegramBot::DB[:users]
+users = DB[:users]
 users.each do |user|
-  telegram_bot = TelegramBot.new(user: user)
+  telegram_bot = User.new(user: user)
   telegram_bot.send_message
 end

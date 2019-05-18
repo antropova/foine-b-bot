@@ -14,7 +14,7 @@ DB.transaction do
   DB.alter_table(:users) do
     add_column :admin, "BOOLEAN", default: false
   end
-  DB[:users].where(name: "Masha").first.update(admin: true)
+  User.where(name: "Masha").first.update(admin: true)
 end
 
 DB.transaction do
@@ -22,7 +22,7 @@ DB.transaction do
     add_column :signup_completed, "BOOLEAN", default: false
   end
 
-  DB[:users].all.each do |user|
+  User.all.each do |user|
     user.update(signup_completed: true)
   end
 end
