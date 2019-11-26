@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "bundler"
+require 'bundler'
 Bundler.require
 
-require_relative "user"
+require_relative 'user'
 
 DB = User.db
 users = DB[:users]

@@ -6,7 +6,7 @@ require "httparty"
 require_relative "no_matches_error"
 
 class Horoscope
-  attr_accessor :name, :sign, :zodiac_emoji
+  attr_accessor :name, :sign, :zodiac_emoji, :horoscope_url
 
   ZODIAC_EMOJI = {
     aries: "♈️",
@@ -27,18 +27,20 @@ class Horoscope
     @name = name
     @sign = sign.downcase
     @zodiac_emoji = ZODIAC_EMOJI[sign.downcase.to_sym]
+    @horoscope_url = "https://www.vice.com/en_us/astroguide/#{sign}/daily/#{Date.today.strftime('%Y-%m-%d')}"
   end
 
   def parse_horoscope
     retries ||= 0
 
-    feed = RSS::Parser.parse(response.body)
-    horoscope_matches = feed.items.first.content_encoded.match(sign_regex)
+    body = HTTParty.get(horoscope_url).body
+    nokogiri_body = Nokogiri::HTML(body)
+    parsed_text = nokogiri_body.css('.astroguide-sign-content__body').text
 
-    raise NoMatchesError unless horoscope_matches
+    raise NoMatchesError if parsed_text.empty?
 
-    channel_title = "✨ #{name.capitalize}\'s daily horoscope from #{feed.channel.title} ✨\n"
-    horoscope_text = "#{zodiac_emoji} #{format_horoscope(horoscope_matches[2])} #{zodiac_emoji}"
+    channel_title = "✨ #{name.capitalize}\'s daily horoscope from Vice ✨\n"
+    horoscope_text = "#{zodiac_emoji} #{parsed_text} #{zodiac_emoji}"
 
     "#{channel_title} #{horoscope_text}"
   rescue NoMatchesError => exception
