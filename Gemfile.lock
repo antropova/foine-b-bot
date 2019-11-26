@@ -27,7 +27,7 @@ GEM
     mini_portile2 (2.4.0)
     multi_xml (0.6.0)
     multipart-post (2.0.0)
-    nokogiri (1.10.2)
+    nokogiri (1.10.4)
       mini_portile2 (~> 2.4.0)
     pg (1.1.4)
     pry (0.12.2)
