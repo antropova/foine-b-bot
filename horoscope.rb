@@ -28,7 +28,7 @@ class Horoscope
     @name = name
     @sign = sign.downcase
     @zodiac_emoji = ZODIAC_EMOJI[sign.downcase.to_sym]
-    @horoscope_url = "https://www.vice.com/en_us/astroguide/#{sign}/daily/#{Date.today.strftime('%Y-%m-%d')}"
+    @horoscope_url = full_horoscope_url
   end
 
   def generate_horoscope
@@ -41,6 +41,10 @@ class Horoscope
   end
 
   private
+
+  def full_horoscope_url
+    "#{ENV['HOROSCOPE_URL']}/#{sign}/daily/#{Date.today.strftime('%Y-%m-%d')}"
+  end
 
   def sign_regex
     %r{(#{sign.downcase}\.jpeg" .*?)<p>(.*?)<\/p>}
@@ -74,10 +78,6 @@ class Horoscope
 
   def parsed_link(horoscope_text)
     horoscope_text.match(parse_link_regex)[1]
-  end
-
-  def response
-    HTTParty.get(ENV["VICE_HOROSCOPE_RSS"])
   end
 
   def parse_horoscope_link(horoscope_text)
