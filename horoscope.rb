@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require "open-uri"
-require "httparty"
+require 'open-uri'
+require 'httparty'
+require 'pry'
 
-require_relative "no_matches_error"
+require_relative 'no_matches_error'
 
 class Horoscope
   attr_accessor :name, :sign, :zodiac_emoji, :horoscope_url
@@ -30,32 +31,41 @@ class Horoscope
     @horoscope_url = "https://www.vice.com/en_us/astroguide/#{sign}/daily/#{Date.today.strftime('%Y-%m-%d')}"
   end
 
-  def parse_horoscope
+  def generate_horoscope
     retries ||= 0
 
     body = HTTParty.get(horoscope_url).body
     nokogiri_body = Nokogiri::HTML(body)
-    parsed_text = nokogiri_body.css('.astroguide-sign-content__body').text
 
-    raise NoMatchesError if parsed_text.empty?
-
-    channel_title = "✨ #{name.capitalize}\'s daily horoscope from Vice ✨\n"
-    horoscope_text = "#{zodiac_emoji} #{parsed_text} #{zodiac_emoji}"
-
-    "#{channel_title} #{horoscope_text}"
-  rescue NoMatchesError => exception
-    retries += 1
-
-    Raven.extra_context retries: retries
-    Raven.capture_exception(exception)
-
-    retry if retries <= ENV["RSS_PARSE_RETRIES"].to_i
+    parse_text(nokogiri_body, retries)
   end
 
   private
 
   def sign_regex
     %r{(#{sign.downcase}\.jpeg" .*?)<p>(.*?)<\/p>}
+  end
+
+  def parse_text(body, retries)
+    today_text = body.css('.astroguide-sign-content__body').text
+    cosmic_event_title = body.css('.astroguide-cosmic-event > h2').text
+    cosmic_event_text = body.css('.astroguide-cosmic-event__article > p:first-child').text
+
+    raise NoMatchesError if today_text.empty?
+
+    parsed_text = "#{today_text}\n#{cosmic_event_title}\n#{cosmic_event_text}"
+
+    channel_title = "✨ Daily horoscope from Vice for #{name.capitalize} ✨\n"
+    horoscope_text = "#{zodiac_emoji} #{parsed_text} #{zodiac_emoji}"
+
+    "#{channel_title}\n#{horoscope_text}"
+  rescue NoMatchesError => e
+    retries += 1
+
+    Raven.extra_context retries: retries
+    Raven.capture_exception(e)
+
+    retry if retries <= ENV["RSS_PARSE_RETRIES"].to_i
   end
 
   def parse_link_regex

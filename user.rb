@@ -22,11 +22,11 @@ class User < Sequel::Model(:users)
     Telegram::Bot::Client.run(ENV["TELEGRAM_TOKEN"]) do |bot|
       bot.api.send_message(
         chat_id: user[:telegram_id],
-        text: horoscope.parse_horoscope
+        text: horoscope.generate_horoscope
       )
     end
-  rescue => exception
-    Raven.capture_exception(exception)
+  rescue => e
+    Raven.capture_exception(e)
   end
 
   def self.db
