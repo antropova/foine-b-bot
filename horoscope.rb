@@ -5,9 +5,10 @@ require 'httparty'
 require 'pry'
 
 require_relative 'no_matches_error'
+require_relative 'no_path_found_error'
 
 class Horoscope
-  attr_accessor :name, :sign, :zodiac_emoji, :horoscope_url
+  attr_accessor :name, :sign, :zodiac_emoji
 
   ZODIAC_EMOJI = {
     aries: "♈️",
@@ -28,26 +29,53 @@ class Horoscope
     @name = name
     @sign = sign.downcase
     @zodiac_emoji = ZODIAC_EMOJI[sign.downcase.to_sym]
-    @horoscope_url = full_horoscope_url
   end
 
   def generate_horoscope
-    retries ||= 0
-
-    body = HTTParty.get(horoscope_url).body
+    # retries ||= 0
+    body = HTTParty.get(ENV['HOROSCOPE_URL']).body
     nokogiri_body = Nokogiri::HTML(body)
 
-    parse_text(nokogiri_body, retries)
+    horoscope_text(nokogiri_body)
+  rescue NoPathFoundError => e
+    Raven.capture_exception(e)
+  rescue NoMatchesError => e
+    Raven.capture_exception(e)
   end
 
   private
 
-  def full_horoscope_url
-    "#{ENV['HOROSCOPE_URL']}/#{sign}/daily/#{Date.today.strftime('%Y-%m-%d')}"
+  def personal_url(main_body)
+    "#{ENV['HOME_URL']}#{personal_path(main_body)}"
   end
 
-  def sign_regex
-    %r{(#{sign.downcase}\.jpeg" .*?)<p>(.*?)<\/p>}
+  def personal_path(main_body)
+    path = main_body.css('.vice-card').first.css('a').first.attributes['href'].value
+    raise NoPathFoundError if path.empty?
+
+    path
+  end
+
+  def sign_index
+    ZODIAC_EMOJI.keys.index(sign.to_sym) + 2
+  end
+
+  def horoscope_text(nokogiri_body)
+    horoscopes_url = personal_url(nokogiri_body)
+    horoscopes_body = HTTParty.get(horoscopes_url).body
+    horoscopes_ng_body = Nokogiri::HTML(horoscopes_body)
+    horoscope_text = horoscopes_ng_body.css('.abc__textblock')[sign_index].text
+
+    raise NoMatchesError if horoscope_text.empty?
+
+    format_horsocope(horoscope_text)
+  end
+
+  def format_horsocope(main_text)
+    title = "✨ Daily horoscope from Vice for #{name.capitalize} ✨\n"
+    horoscope_text = "#{zodiac_emoji} #{main_text.strip} #{zodiac_emoji}"
+
+    "#{title}\n#{horoscope_text}"
   end
 
   def parse_text(body, retries)
@@ -70,21 +98,5 @@ class Horoscope
     Raven.capture_exception(e)
 
     retry if retries <= ENV["RSS_PARSE_RETRIES"].to_i
-  end
-
-  def parse_link_regex
-    %r{<a href="(.*?)" target="_blank">here<\/a>}
-  end
-
-  def parsed_link(horoscope_text)
-    horoscope_text.match(parse_link_regex)[1]
-  end
-
-  def parse_horoscope_link(horoscope_text)
-    horoscope_text.gsub(parse_link_regex, "here -- #{parsed_link(horoscope_text)}")
-  end
-
-  def format_horoscope(matching_string)
-    matching_string.match?(parse_link_regex) ? parse_horoscope_link(matching_string) : matching_string
   end
 end
