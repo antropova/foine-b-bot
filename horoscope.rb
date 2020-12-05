@@ -50,7 +50,7 @@ class Horoscope
   end
 
   def personal_path(main_body)
-    path = main_body.css('.vice-card').first.css('a').first.attributes['href'].value
+    path = main_body.css('.vice-card').first.css('.vice-card-hed__link').first.attributes['href'].value
     raise NoPathFoundError if path.empty?
 
     path
@@ -64,39 +64,39 @@ class Horoscope
     horoscopes_url = personal_url(nokogiri_body)
     horoscopes_body = HTTParty.get(horoscopes_url).body
     horoscopes_ng_body = Nokogiri::HTML(horoscopes_body)
-    horoscope_text = horoscopes_ng_body.css('.abc__textblock')[sign_index].text
+    main_horoscope_text = horoscopes_ng_body.css('.abc__textblock')[sign_index].text
 
-    raise NoMatchesError if horoscope_text.empty?
+    raise NoMatchesError if main_horoscope_text.empty?
 
-    format_horsocope(horoscope_text)
+    format_horsocope(main_horoscope_text)
   end
 
   def format_horsocope(main_text)
     title = "✨ Daily horoscope from Vice for #{name.capitalize} ✨\n"
-    horoscope_text = "#{zodiac_emoji} #{main_text.strip} #{zodiac_emoji}"
+    zodiac_title = "#{zodiac_emoji} #{sign.capitalize} #{zodiac_emoji}\n"
 
-    "#{title}\n#{horoscope_text}"
+    "#{title}\n #{zodiac_title}#{main_text.strip}"
   end
 
-  def parse_text(body, retries)
-    today_text = body.css('.astroguide-sign-content__body').text
-    cosmic_event_title = body.css('.astroguide-cosmic-event > h2').text
-    cosmic_event_text = body.css('.astroguide-cosmic-event__article > p:first-child').text
+  # def parse_text(body, retries)
+  #   today_text = body.css('.astroguide-sign-content__body').text
+  #   cosmic_event_title = body.css('.astroguide-cosmic-event > h2').text
+  #   cosmic_event_text = body.css('.astroguide-cosmic-event__article > p:first-child').text
 
-    raise NoMatchesError if today_text.empty?
+  #   raise NoMatchesError if today_text.empty?
 
-    parsed_text = "#{today_text}\n#{cosmic_event_title}\n#{cosmic_event_text}"
+  #   parsed_text = "#{today_text}\n#{cosmic_event_title}\n#{cosmic_event_text}"
 
-    channel_title = "✨ Daily horoscope from Vice for #{name.capitalize} ✨\n"
-    horoscope_text = "#{zodiac_emoji} #{parsed_text} #{zodiac_emoji}"
+  #   channel_title = "✨ Daily horoscope from Vice for #{name.capitalize} ✨\n"
+  #   main_horoscope_text = "#{zodiac_emoji} #{parsed_text} #{zodiac_emoji}"
 
-    "#{channel_title}\n#{horoscope_text}"
-  rescue NoMatchesError => e
-    retries += 1
+  #   "#{channel_title}\n#{main_horoscope_text}"
+  # rescue NoMatchesError => e
+  #   retries += 1
 
-    Raven.extra_context retries: retries
-    Raven.capture_exception(e)
+  #   Raven.extra_context retries: retries
+  #   Raven.capture_exception(e)
 
-    retry if retries <= ENV["RSS_PARSE_RETRIES"].to_i
-  end
+  #   retry if retries <= ENV["RSS_PARSE_RETRIES"].to_i
+  # end
 end
